@@ -13,7 +13,7 @@ We present the source code.
   - [Method](#Method)
 
 ## Overview
-![MKGF](https://raw.githubusercontent.com/ehnal/MKGF/main/MKGF.jpg)
+![MedKCoT](https://github.com/EnjoyFailure/MedKCoT/blob/main/framework.jpg)
 
 We propose a framework of MedKCoT which mainly consists of three parts: (1) multi-modal knowledge retriever training, (2) multi-modal medical CoT generation and (3) MedVQA model training.
 
