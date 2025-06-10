@@ -1,126 +1,79 @@
-# MMpedia
-This is the official github repository for the paper "MMpedia: A Large-scale Multi-modal Knowledge Graph".
+# MedKCoT
 
-We presented our implementation of MMpedia's construction pipeline and the experiments, and released the MMpedia dataset.
+This is the official github repository for the paper "MKGF:A Multi-modal Knowledge Graph Based RAG Framework to Enhance LVLMs for Medical Visual Question Answering".
+
+We present the source code and release the data.
 
 ## Contents
 
-- [MMpedia](#MMpedia)
-  - [Contents](#contents)
-  - [Overview](#overview)
-  - [Download](#download)
-  - [MMpedia API](#MMpedia-API)
-  - [Data Format](#data-format)
-  - [Dataset Construction](#dataset-construction)
-  - [Downstream Tasks](#downstream-tasks)
-  - [Resource Maintenance Plan](#Resource-Maintenance-Plan)
-  - [License](#license)
+- [MKGF](#MKGF)
+  - [Contents](#Contents)
+  - [Overview](#Overview)
+  - [Dataset](#Dataset)
+  - [MMKG](#MMKG)
+  - [Method](#Method)
 
 ## Overview
+![MKGF](https://raw.githubusercontent.com/ehnal/MKGF/main/MKGF.jpg)
 
-<img src="imgs/pipeline.jpg"/>
+We propose a MKGF framework that leverages a multi-modal medicaknowledge graph (MMKG) to relieve the hallucination issue without fine-tuning the abundant parameters of LVLMs. Firstly, we employ a pre-trained text retriever to build question-knowledge relations on training set. Secondly, we train a multi-modal retriever with these relations. Finally, we use it to retrieve question-relevant knowledge and enhance the performance of LVLMs on the test set. To evaluate the effectiveness of MKGF,we conduct extensive experiments on two public datasets Slake and VQA-RAD.
 
+## Dataset
+To evaluate the effectiveness of the proposed MKGF framework, we conduct experiments on two public Med-VOA datasets:(1)Slake and (2)VQA-RAD.
+For Slake, we use its English version, which contains 642 radiology images and 7,033 question-answer pairs. For VQA-RAD, it contains 315 radiology images and 3,515 question–answer pairs.
 
-In MMpedia, we aim to construct a new MMKG via grounding entities in KGs on images. For example, given an entity **Acroma_(Band)**, we expect to find images of its members and live performances.
+## MMKG
+We construct the MMKG based on a public medical knowledge graph (MKG), which has 52.6K triples of the head entity, relation and tail entity. 
 
-We propose a 4-step pipeline. In step 1, we collect entity information from DBpedia and Google. In step 2, we build a multi-modal classifier to filter non-visual entity node (e.g., "Goal") . In Step 3, we remove images not matching the textual description (e.g., logos of Acroma's Facebook). In Step 4, we further remove images not representing the given entity (e.g., a shirt with "Acroma").
+The textual part of the MMKG is available in /KG.
 
-## Download
+The pictures in the knowledge graph will be given after the official submission of the paper.
 
-Here we provide a release version of MMpedia. The full dataset including all the images and the corresponding entities can be accessed by [GoogleDrive](https://drive.google.com/drive/folders/13GFHEfKMw9rAR0IvLB46L39UF5fYN9FY?usp=sharing).
+## Method
 
-The Metadata file is `MMpedia_triples.ttl`.
+### Step 0 
+### Prepare models,dataest and environment
+Download the LVLMs LLava-med-7B or HuatuoGPT-Vision-7B in /model. 
 
-The preprocessed triples file is `MMpedia_triplets.json`.
+Download the model BGE and BiomedCLIP in /model. for retrieval.
 
-The entity to map images file is `entity2image.json`. 
+Download the dataest SLAKE in /dataest/SLAKE
 
-Presistent URL:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7816711.svg)](https://doi.org/10.5281/zenodo.7816711)
-
-## MMpedia API
-
- Here we provide a easy-to-use API to enable easy access of MMpedia data. Before using the MMpedia api, you should download both the dataset and two json files: `MMpedia_triplets.json` and `entity2image.json` into one directory. You can use the api to explore MMpedia by:
-
-```python
->>> from MMpedia_api import MMpediaDataset
->>> dataset = MMpediaDataset(root_dir=".")
->>> entity2image = dataset.load_mapping()
+Then install the environment in requirements.txt
+```
+>>> pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 ```
 
-To list all the relations, entities and triples in MMpedia, use:
+### Step 1
+### Generate rationale
+You can run the following script to generate rationale based on SLAKE with GPT-4o.
+```
+>>> cd rationale
+>>> python generate_rationale.py
+```
+Or you can directly use the file we generated using GPT-4o(/rationale/SLAKE/slake_rationale.json)
 
-```python
->>> relations = dataset.load_relations() # [rel1, rel2, ...]
->>> entities = dataset.load_entities() # [ent1, ent2, ...]
->>> triples = dataset.load_triplets() # [[h1, r1, t1], [h2, r2, t2], ...]
+### Step 2 
+### Train multimodal retriever
+You can run the following script to train a multimodal retriever based on BiomedCLIP
+```
+>>> cd reranker
+>>> python -u main.py
 ```
 
-The MMpedia api supports image retrieval method based on the specified entity:
+### Step 3
+### Run MKGF
+You can run the following script to run and evaluate our method on LLava-med-7B.
+```
+>>> cd MKGF_llava
+>>> python llava_slake.py
+```
 
-```python
-# Retrieve images by entity
->>> imgs = get_entity_img(entity="Bart_Tanski", entity2image=entity2image) # [img1, img2, ...]
+You can run the following script to run and evaluate our method on HuatuoGPT-Vision-7B.
+```
+>>> cd MKGF_huatuo
+>>> python huatuo_slake.py
 ```
 
 
-## Data Format
 
-Here we describe how MMpedia is stored. The MMpedia dataset is split into 132 subsets and each subset is compressed into a `.tar` file. After unziping files under the folder "MMpedia", the data structure are as following:
-
-```
-  |-MMpedia
-      |-Entitylist1
-          |-Entity1
-              |-1.jpg
-              |-2.jpg
-              |-3.jpg
-              ...
-          |-Entity2
-          |-Entity3
-          ...
-      |-Entitylist2
-      |-Entitylist3
-      ...
-```
-
-"EntitylistX" is used to divide a large number of entities and "EntityX" represents the entity corresponding to the stored images.
-
-For example, the path `MMpedia/Entlist141/Bart Tanski/Bart Tanski+1.jpg` means the image corresponding to the entity "Bart Tanski".
-
-## Dataset Construction
-
-All the codes related to the dataset construction pipeline are in [data_construction](https://github.com/Delicate2000/MMpedia/tree/main/dataset_construction). 
-
-For each step, we provide a detailed Readme.md in the corresponding folder. 
-
-## Downstream tasks
-
-We employ downstream tasks to demonstrate the effectiveness of proposed methods and collected images. All the codes are in [downstream tasks](https://github.com/Delicate2000/MMpedia/tree/main/downstream%20tasks).
-
-To facilitate data download, we additionally package the related images [here](https://drive.google.com/file/d/1pmdtbseQl5hMaqSWGDhER8_eYdqLMXi5/view?usp=share_link). 
-
-For each model, the training strategy is the same and the only difference is the information the model received.
-
-Following instructions use BERT-based methods as defalut, you can run the model by scripts:
-```
-bash train_text.sh # BERT
-bash train_our.sh # BERT+ResNet50+Our
-bash train_noise.sh # BERT+ResNet50+Noise
-bash train_vilt_our.sh # ViLT+Our
-bash train_vilt_noise.sh # ViLT+Noise
-```
-
-The parameter "task" and "image_type" are designed to control the task and input image. For example, "--task=pt --image_type=Our" means the model is going to perform tail entity prediction task and the input information is our collected images.
-
-We also provide a detailed Readme.md for every method [here](https://github.com/Delicate2000/MMpedia/tree/main/downstream%20tasks#readme). 
-
-## Resource Maintenance Plan
-
-Our current resource maintenance plan involves updating in accordance with the version updates of DBpedia. In the future, we will expand the scale of MMpedia by providing image resources for more knowledge graphs using the proposed method.
-
-## License
-
-[![](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
-
-This work is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International Public License](https://creativecommons.org/licenses/by-nc/4.0/).
