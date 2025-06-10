@@ -6,74 +6,52 @@ We present the source code.
 
 ## Contents
 
-- [MedKCoT](#MKGF)
+- [MedKCoT](#MedKCoT)
   - [Contents](#Contents)
   - [Overview](#Overview)
   - [Dataset](#Dataset)
-  - [MMKG](#MMKG)
   - [Method](#Method)
 
 ## Overview
 ![MKGF](https://raw.githubusercontent.com/ehnal/MKGF/main/MKGF.jpg)
 
-We propose a MKGF framework that leverages a multi-modal medicaknowledge graph (MMKG) to relieve the hallucination issue without fine-tuning the abundant parameters of LVLMs. Firstly, we employ a pre-trained text retriever to build question-knowledge relations on training set. Secondly, we train a multi-modal retriever with these relations. Finally, we use it to retrieve question-relevant knowledge and enhance the performance of LVLMs on the test set. To evaluate the effectiveness of MKGF,we conduct extensive experiments on two public datasets Slake and VQA-RAD.
+We propose a framework of MedKCoT which mainly consists of three parts: (1) multi-modal knowledge retriever training, (2) multi-modal medical CoT generation and (3) MedVQA model training.
 
 ## Dataset
-To evaluate the effectiveness of the proposed MKGF framework, we conduct experiments on two public Med-VOA datasets:(1)Slake and (2)VQA-RAD.
+To evaluate the effectiveness of the proposed MedKCoT framework, we conduct experiments on two public Med-VOA datasets:(1)Slake and (2)VQA-RAD.
 For Slake, we use its English version, which contains 642 radiology images and 7,033 question-answer pairs. For VQA-RAD, it contains 315 radiology images and 3,515 question–answer pairs.
-
-## MMKG
-We construct the MMKG based on a public medical knowledge graph (MKG), which has 52.6K triples of the head entity, relation and tail entity. 
-
-The textual part of the MMKG is available in /KG.
-
-The pictures in the knowledge graph will be given after the official submission of the paper.
 
 ## Method
 
 ### Step 0 
-### Prepare models,dataest and environment
-Download the LVLMs LLava-med-7B or HuatuoGPT-Vision-7B in /model. 
-
-Download the model BGE and BiomedCLIP in /model. for retrieval.
-
-Download the dataest SLAKE in /dataest/SLAKE
-
-Then install the environment in requirements.txt
+### Prepare environment
+The environment for retriver training and CoT generation in requirements.txt
 ```
 >>> pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 ```
+the envitiment for MedVQA model training is based on LlamaFactory.
 
 ### Step 1
-### Generate rationale
-You can run the following script to generate rationale based on SLAKE with GPT-4o.
+### retriver training
+You can run the following script to train the retriver.
 ```
->>> cd rationale
->>> python generate_rationale.py
+>>> cd MMKG_Retriver/scoring
+>>> python iter_check_and_score.py # LVLM preference scoring
+>>> cd MMKG_Retriver/training
+>>> python main.py
 ```
-Or you can directly use the file we generated using GPT-4o(/rationale/SLAKE/slake_rationale.json)
 
 ### Step 2 
-### Train multimodal retriever
-You can run the following script to train a multimodal retriever based on BiomedCLIP
+### CoT generation
+You can run the following script to get the CoT from GPT-4.
 ```
->>> cd reranker
->>> python -u main.py
+>>> cd generation_CoT
+>>> python gpt_generate_reason_slake_KG.py
 ```
 
 ### Step 3
-### Run MKGF
-You can run the following script to run and evaluate our method on LLava-med-7B.
-```
->>> cd MKGF_llava
->>> python llava_slake.py
-```
-
-You can run the following script to run and evaluate our method on HuatuoGPT-Vision-7B.
-```
->>> cd MKGF_huatuo
->>> python huatuo_slake.py
-```
-
+### Train MedVQA model
+Please use the obtained CoT and the original QA pair as training data and refer to the Settings of llamafactory to train the model.
+https://github.com/hiyouga/LLaMA-Factory
 
 
