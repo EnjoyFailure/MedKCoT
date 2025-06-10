@@ -1,12 +1,12 @@
-# MedKCoT: A Multi-modal Knowledge Graph based Chain of Thought Generation framework for Medical Visual Question Answering
+# MedKCoT
 
-This is the official github repository for the paper "MKGF:A Multi-modal Knowledge Graph Based RAG Framework to Enhance LVLMs for Medical Visual Question Answering".
+This is the official github repository for the paper "MedKCoT: A Multi-modal Knowledge Graph based Chain of Thought Generation framework for Medical Visual Question Answering".
 
-We present the source code and release the data.
+We present the source code.
 
 ## Contents
 
-- [MKGF](#MKGF)
+- [MedKCoT](#MKGF)
   - [Contents](#Contents)
   - [Overview](#Overview)
   - [Dataset](#Dataset)
