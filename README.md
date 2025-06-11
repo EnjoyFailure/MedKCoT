@@ -29,7 +29,7 @@ The environment for retriver training and CoT generation in requirements.txt
 ```
 >>> pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 ```
-the envitiment for MedVQA model training is based on LlamaFactory.
+the environment for MedVQA model training is based on LlamaFactory.
 
 ### Step 1
 ### retriver training
