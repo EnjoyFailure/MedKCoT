@@ -1,6 +1,7 @@
 # MedKCoT
 
-This is the official github repository for the paper "MedKCoT: A Multi-modal Knowledge Graph based Chain of Thought Generation framework for Medical Visual Question Answering".
+This is the official github repository for the paper "A Knowledge-Guided LVLM Framework for Chain-of-Thought
+Generation in Medical Visual Question Answering".
 
 We present the source code.
 
